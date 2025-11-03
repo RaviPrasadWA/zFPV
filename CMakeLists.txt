@@ -7,6 +7,57 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Get spdlog from package manager for those tests
 set(WB_USE_SPDLOG_EXTERNALLY OFF)
+
+#----------------------------------------------------------------------------------------------------------------------
+# Dependencies: spdlog and nlohmann::json
+#----------------------------------------------------------------------------------------------------------------------
+set(SPDLOG_MASTER_PROJECT OFF)
+set(SPDLOG_PROJECT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/executables/spdlog)
+set(SPDLOG_SOURCES_DIRECTORY ${SPDLOG_PROJECT_DIRECTORY}/src)
+
+set(spdlog_sources
+    "${SPDLOG_SOURCES_DIRECTORY}/bundled_fmtlib_format.cpp"
+)
+
+# Create the SpdlogLIB target
+add_library(SpdlogLIB executables/spdlog.cpp)
+target_precompile_headers(SpdlogLIB PRIVATE ${SPDLOG_PROJECT_DIRECTORY}/include/spdlog/spdlog.h)
+target_include_directories(SpdlogLIB PUBLIC ${SPDLOG_PROJECT_DIRECTORY}/include)
+
+# Add nlohmann::json
+add_subdirectory(executables/json)
+# target_link_libraries(JsonRWLib PUBLIC nlohmann_json::nlohmann_json)
+
+#----------------------------------------------------------------------------------------------------------------------
+# Sources
+#----------------------------------------------------------------------------------------------------------------------
+set(sources
+    "executables/utils.cpp"
+    "executables/spdlog.cpp"
+    "executables/profile.cpp"
+    "executables/camera_enums.hpp"
+    "executables/camera_settings.hpp"
+    "executables/camera.hpp"
+    "executables/ini_config.cpp"
+    "executables/util_filesystem.cpp"
+    "executables/wifi_card_discovery.cpp"
+    "executables/wb_link_helper.cpp"
+    "executables/util_time.cpp"
+    "executables/settings_imp.cpp"
+    "executables/action_handler.cpp"
+    "executables/util_async.cpp"
+    "executables/reboot_util.cpp"
+    "executables/bitrate.cpp"
+    "executables/wb_link_settings.cpp"
+    "executables/platform.cpp"
+    "executables/settings_directories.cpp"
+    "executables/wifi_command_helper.cpp"
+    "executables/wb_link_manager.cpp"
+    "executables/wb_link.cpp"
+)
+
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
+
 #
 # Defines WB_TARGET_LINK_LIBRARIES
 # which can then be used to integrate wifibroadcast into your project
@@ -135,10 +186,43 @@ endif ()
 
 
 SET(WB_TARGET_LINK_LIBRARIES wifibroadcast)
+SET(SPDLOG_LINK_LIBRARIES SpdlogLIB)
 # SET(WB_INCLUDE_DIRECTORES ${CMAKE_CURRENT_LIST_DIR}/wifibroadcast)
 
-add_executable(wb_link_tx executables/wb_link_tx.cpp)
-target_link_libraries(wb_link_tx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+add_executable(wb_link_tx_impv executables/wb_link_tx_impv.cpp 
+    executables/spdlog.cpp 
+    executables/profile.cpp
+    executables/utils.cpp
+    executables/camera_enums.hpp
+    executables/camera_settings.hpp
+    executables/camera.hpp
+    executables/ini_config.cpp
+    executables/util_filesystem.cpp
+    executables/platform.cpp
+    executables/wb_link_helper.cpp
+    executables/util_time.cpp
+    executables/action_handler.cpp
+    executables/settings_imp.cpp
+    executables/wb_link_settings.cpp
+    executables/util_async.cpp
+    executables/reboot_util.cpp
+    executables/bitrate.cpp
+    executables/wifi_card_discovery.cpp
+    executables/settings_directories.cpp
+    executables/wifi_command_helper.cpp
+    executables/wb_link_manager.cpp
+    executables/wb_link.cpp)
+target_include_directories(wb_link_tx_impv PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/executables
+)
+target_link_libraries(wb_link_tx_impv PRIVATE ${WB_TARGET_LINK_LIBRARIES} ${SPDLOG_LINK_LIBRARIES} nlohmann_json::nlohmann_json)
 
-add_executable(wb_link_rx executables/wb_link_rx.cpp)
-target_link_libraries(wb_link_rx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+
+# add_executable(wb_link_tx executables/wb_link_tx.cpp)
+# target_link_libraries(wb_link_tx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+
+# add_executable(wb_link_rx executables/wb_link_rx.cpp)
+# target_link_libraries(wb_link_rx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+
+
+

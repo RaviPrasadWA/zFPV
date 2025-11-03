@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
   int mcs_index = 3;
   int tx_interval_ms = 100;
   bool use_pipe = false;
+  bool is_air = true;
   size_t pipe_chunk_size = 1400; // fits max payload
 
   for (int i = 1; i < argc; ++i) {
@@ -50,42 +51,49 @@ int main(int argc, char **argv) {
   if (emulate) cards.push_back(wifibroadcast::create_card_emulate(true));
   else cards.push_back(wifibroadcast::WifiCard{"wlan1", wifibroadcast::WIFI_CARD_TYPE_UNKNOWN});
 
-  WBTxRx::Options options;
-  auto radiotap_holder = std::make_shared<RadiotapHeaderTxHolder>();
+  WBTxRx::Options options_txrx{};
+  options_txrx.pcap_rx_set_direction = true;
+  options_txrx.use_gnd_identifier = !is_air;
+
+  auto radiotap_header_holder = std::make_shared<RadiotapHeaderTxHolder>();
   RadiotapHeaderTx::UserSelectableParams params{};
   params.bandwidth = initial_bw;
   params.mcs_index = mcs_index;
-  radiotap_holder->thread_safe_set(params);
+  radiotap_header_holder->thread_safe_set(params);
 
-  std::shared_ptr<WBTxRx> wb;
-  try { wb = std::make_shared<WBTxRx>(cards, options, radiotap_holder); }
+  std::shared_ptr<WBTxRx> txrx;
+  try { txrx = std::make_shared<WBTxRx>(cards, options_txrx, radiotap_header_holder); }
   catch (const std::exception &e) { std::cerr << "Failed to create WBTxRx: " << e.what() << std::endl; return 2; }
+
+  //std::shared_ptr<WBTxRx> txrx =
+  //    std::make_shared<WBTxRx>(cards, options_txrx, radiotap_header_holder);
 
   std::signal(SIGINT, sigint_handler);
   std::signal(SIGTERM, sigint_handler);
 
   std::cout << "Transmitter running. Press Ctrl-C to quit." << std::endl;
   if (use_pipe) {
-    std::vector<uint8_t> buffer(pipe_chunk_size);
-    while (keep_running) {
-      std::cin.read(reinterpret_cast<char*>(buffer.data()), pipe_chunk_size);
-      std::streamsize got = std::cin.gcount();
-      if (got <= 0) break;
-      auto header = radiotap_holder->thread_safe_get();
-      wb->tx_inject_packet(1, buffer.data(), got, header, false);
-      std::cout << "TX pipe chunk: " << got << " bytes" << std::endl;
-    }
-  } else {
+     std::vector<uint8_t> buffer(pipe_chunk_size);
+     while (keep_running) {
+       std::cin.read(reinterpret_cast<char*>(buffer.data()), pipe_chunk_size);
+       std::streamsize got = std::cin.gcount();
+       if (got <= 0) break;
+       auto header = radiotap_header_holder->thread_safe_get();
+       
+       txrx->tx_inject_packet(1, buffer.data(), got, header, false);
+       std::cout << "TX pipe chunk: " << got << " bytes" << std::endl;
+     }
+   } else {
     int counter = 0;
     while (keep_running) {
       std::string payload = "Hello " + std::to_string(counter);
-      auto header = radiotap_holder->thread_safe_get();
-      wb->tx_inject_packet(1, reinterpret_cast<const uint8_t*>(payload.data()), payload.size(), header, false);
+      auto header = radiotap_header_holder->thread_safe_get();
+      txrx->tx_inject_packet(0, (uint8_t *)payload.data(), payload.size(), header, false);
       std::cout << "TX: " << payload << std::endl;
       ++counter;
       std::this_thread::sleep_for(std::chrono::milliseconds(tx_interval_ms));
     }
-  }
+   }
   std::cout << "Transmitter shutting down..." << std::endl;
   return 0;
 }
