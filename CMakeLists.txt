@@ -54,6 +54,7 @@ set(sources
     "executables/wifi_command_helper.cpp"
     "executables/wb_link_manager.cpp"
     "executables/wb_link.cpp"
+    "executables/wb_interface.cpp"
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
@@ -211,7 +212,8 @@ add_executable(wb_link_tx_impv executables/wb_link_tx_impv.cpp
     executables/settings_directories.cpp
     executables/wifi_command_helper.cpp
     executables/wb_link_manager.cpp
-    executables/wb_link.cpp)
+    executables/wb_link.cpp
+    executables/wb_interface.cpp)
 target_include_directories(wb_link_tx_impv PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/executables
 )

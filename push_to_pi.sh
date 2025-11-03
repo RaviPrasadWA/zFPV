@@ -9,4 +9,4 @@ mkdir $PI_DIR
 "
 
 scp build_cmake.sh install_dep.sh CMakeLists.txt run.sh WBLib.cmake hardware.conf "$PI_ADDR:$PI_DIR/"
-scp -r cmake executables lib src "$PI_ADDR:$PI_DIR/"
+scp -r cmake executables lib src settings "$PI_ADDR:$PI_DIR/"
