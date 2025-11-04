@@ -33,6 +33,8 @@
 #include <optional>
 #include <vector>
 
+#include "settings_directories.h"
+
 
 std::vector<std::string> OHDFilesystemUtil::getAllEntriesFullPathInDirectory(
     const std::string &directory) {
@@ -182,15 +184,15 @@ void OHDFilesystemUtil::make_file_read_write_everyone(
 }
 
 int OHDFilesystemUtil::get_remaining_space_in_mb() {
-//   std::string videoPath = getVideoPath();
-//   std::filesystem::path folderPath = videoPath;
+  std::string videoPath = openhd::RECORDINGS_BASE_PATH;
+  std::filesystem::path folderPath = videoPath;
 
-//   if (std::filesystem::exists(folderPath)) {
-//     std::filesystem::space_info info = std::filesystem::space(folderPath);
-//     return info.available / 1024 / 1024;
-//   } else {
-//     return 0;
-//   }
+  if (std::filesystem::exists(folderPath)) {
+    std::filesystem::space_info info = std::filesystem::space(folderPath);
+    return info.available / 1024 / 1024;
+  } else {
+    return 0;
+  }
     return 0;
 }
 

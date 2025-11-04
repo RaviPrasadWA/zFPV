@@ -76,4 +76,9 @@ void openhd::generateSettingsDirectoryIfNonExists() {
   OHDFilesystemUtil::create_directories(get_interface_settings_directory());
   OHDFilesystemUtil::create_directories(get_telemetry_settings_directory());
   OHDFilesystemUtil::create_directories(get_video_settings_directory());
+
+  if (!OHDFilesystemUtil::exists(RECORDINGS_BASE_PATH)) {
+    OHDFilesystemUtil::create_directories(RECORDINGS_BASE_PATH);
+  }
+  assert(OHDFilesystemUtil::exists(RECORDINGS_BASE_PATH));
 }

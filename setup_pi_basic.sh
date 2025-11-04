@@ -4,7 +4,7 @@
 
 # --- CONFIGURATION ---
 PI_USER="ravilinda"
-PI_HOST="192.168.1.9"
+PI_HOST="192.168.1.10"
 PI_HOME=/home/$PI_USER
 
 
@@ -12,6 +12,7 @@ echo '📁 Setting up libs'
 ssh $PI_USER@$PI_HOST "
 echo '📦 Installing required camera packages...'
 sudo apt update
+sudo sudo apt install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-tools
 sudo apt install -y libcamera-tools libcamera-dev libcamera-apps gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav raspberrypi-kernel-headers build-essential git dkms bc iw cmake
 
 echo 'Libs setup complete.'

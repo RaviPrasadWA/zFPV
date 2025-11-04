@@ -4,9 +4,18 @@ project(Wifibroadcast)
 cmake_minimum_required(VERSION 3.16.3)
 set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize-address-use-after-scope -fsanitize=address")
+find_package(PkgConfig REQUIRED)
 
 # Get spdlog from package manager for those tests
 set(WB_USE_SPDLOG_EXTERNALLY OFF)
+option(ENABLE_USB_CAMERAS "USB cameras support" OFF)
+
+pkg_search_module(GST REQUIRED
+            gstreamer-1.0>=1.4
+            gstreamer-app-1.0>=1.4
+    )
+pkg_search_module(gstreamer REQUIRED IMPORTED_TARGET gstreamer-1.0>=1.4)
+pkg_search_module(gstreamer-app REQUIRED IMPORTED_TARGET gstreamer-app-1.0>=1.4)
 
 #----------------------------------------------------------------------------------------------------------------------
 # Dependencies: spdlog and nlohmann::json
@@ -55,7 +64,38 @@ set(sources
     "executables/wb_link_manager.cpp"
     "executables/wb_link.cpp"
     "executables/wb_interface.cpp"
+    "executables/usb_thermal_cam_helper.cpp"
+    "executables/validate_camera_settings.cpp"
+    "executables/camera_holder.cpp"
+    "executables/camera_discovery.cpp"
+    "executables/camerastream.cpp"
+    "executables/video_air_generic_settings.cpp"
+    "executables/external_device.cpp"
+    "executables/air_recording_helper.hpp"
+    "executables/gst_bitrate_control_wrapper.hpp"
+    "executables/udp.cpp"
+    "executables/rtp.cpp"
+    "executables/rtp_eof_helper.cpp"
+    "executables/gst_recording_demuxer.cpp"
+    "executables/gstreamstreamer.cpp"
+    "executables/gstaudiostream.cpp"
+    "executables/video_air.cpp"
 )
+
+list(APPEND sources
+        executables/librtp/src/rtp-h264-pack.c
+        executables/librtp/src/rtp-h265-pack.c
+        executables/librtp/src/rtp-packet.c
+        executables/librtp/src/rtp-payload.c
+        executables/librtp/src/rtp-h264-bitstream.c
+)
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/executables/librtp/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/executables/librtp/src
+)
+
+file(GLOB LIBRTP_SRC "executables/librtp/src/*.c")
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
@@ -191,6 +231,7 @@ SET(SPDLOG_LINK_LIBRARIES SpdlogLIB)
 # SET(WB_INCLUDE_DIRECTORES ${CMAKE_CURRENT_LIST_DIR}/wifibroadcast)
 
 add_executable(wb_link_tx_impv executables/wb_link_tx_impv.cpp 
+    ${LIBRTP_SRC}
     executables/spdlog.cpp 
     executables/profile.cpp
     executables/utils.cpp
@@ -213,11 +254,29 @@ add_executable(wb_link_tx_impv executables/wb_link_tx_impv.cpp
     executables/wifi_command_helper.cpp
     executables/wb_link_manager.cpp
     executables/wb_link.cpp
-    executables/wb_interface.cpp)
+    executables/wb_interface.cpp
+    executables/usb_thermal_cam_helper.cpp
+    executables/validate_camera_settings.cpp
+    executables/camera_holder.cpp
+    executables/camera_discovery.cpp
+    executables/camerastream.cpp
+    executables/video_air_generic_settings.cpp
+    executables/external_device.cpp
+    executables/udp.cpp
+    executables/rtp.cpp
+    executables/rtp_eof_helper.cpp
+    executables/gst_bitrate_control_wrapper.hpp
+    executables/air_recording_helper.hpp
+    executables/gst_recording_demuxer.cpp
+    executables/gstreamstreamer.cpp
+    executables/gstaudiostream.cpp
+    executables/video_air.cpp)
+
 target_include_directories(wb_link_tx_impv PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/executables
+    ${CMAKE_CURRENT_SOURCE_DIR}/executables/librtp/inc
 )
-target_link_libraries(wb_link_tx_impv PRIVATE ${WB_TARGET_LINK_LIBRARIES} ${SPDLOG_LINK_LIBRARIES} nlohmann_json::nlohmann_json)
+target_link_libraries(wb_link_tx_impv PRIVATE ${WB_TARGET_LINK_LIBRARIES} ${SPDLOG_LINK_LIBRARIES} nlohmann_json::nlohmann_json PkgConfig::gstreamer PkgConfig::gstreamer-app)
 
 
 # add_executable(wb_link_tx executables/wb_link_tx.cpp)

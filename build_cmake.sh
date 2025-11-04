@@ -25,7 +25,7 @@ mkdir build
 
 cd build
 
-cmake ..
+cmake .. -DENABLE_USB_CAMERAS=OFF
 
 make -j${JOBS}
 

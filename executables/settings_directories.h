@@ -41,6 +41,7 @@ namespace openhd {
 // corruption !!!
 // static constexpr auto SETTINGS_BASE_PATH ="/boot/openhd/settings/";
 static constexpr auto SETTINGS_BASE_PATH = "/home/ravilinda/zFPV/settings/";
+static constexpr auto RECORDINGS_BASE_PATH = "/home/ravilinda/zFPV/recordings/";
 // for example, the unique id
 static std::string get_unit_id_file_path() {
   return std::string(SETTINGS_BASE_PATH) + "unit.id";

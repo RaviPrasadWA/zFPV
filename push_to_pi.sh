@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage: ./push_to_pi.sh [pi_user@pi_host]
 
-PI_ADDR=${1:-ravilinda@192.168.1.9}
+PI_ADDR=${1:-ravilinda@192.168.1.10}
 PI_DIR=zFPV
 
 ssh $PI_ADDR "

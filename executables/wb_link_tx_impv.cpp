@@ -25,6 +25,7 @@
 #include "wifi_command_helper.h"
 #include "wb_link.h"
 #include "wb_interface.h"
+#include "video_air.h"
 
 // static constexpr std::chrono::milliseconds SESSION_KEY_PACKETS_INTERVAL =
 //       std::chrono::milliseconds(500);
@@ -42,4 +43,33 @@ int main(int argc, char **argv) {
     const auto m_profile = DProfile::discover(true);  // true since this is the tx main
     m_console->debug("Starting the Tx");
     auto m_wb_interface = std::make_shared<OHDInterface>( m_profile);
+    auto cameras = OHDVideoAir::discover_cameras();
+    std::unique_ptr<OHDVideoAir> ohd_video_air = std::make_unique<OHDVideoAir>(cameras, m_wb_interface->get_link_handle());
+        static bool quit = false;
+    // https://unix.stackexchange.com/questions/362559/list-of-terminal-generated-signals-eg-ctrl-c-sigint
+    signal(SIGTERM, [](int sig) {
+      std::cerr << "Got SIGTERM, exiting\n";
+      quit = true;
+    });
+    signal(SIGQUIT, [](int sig) {
+      std::cerr << "Got SIGQUIT, exiting\n";
+      quit = true;
+    });
+    const auto run_time_begin = std::chrono::steady_clock::now();
+    while (!quit) {
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+      if (openhd::TerminateHelper::instance().should_terminate()) {
+        m_console->debug("Terminating,reason:{}",
+                         openhd::TerminateHelper::instance().terminate_reason());
+        break;
+      }
+    }
+    // --- terminate openhd, most likely requested by a developer with sigterm
+    m_console->debug("Terminating openhd");
+    // Stop any communication between modules, to eliminate any issues created
+    // by threads during cleanup
+    openhd::LinkActionHandler::instance().disable_all_callables();
+    openhd::ExternalDeviceManager::instance().remove_all();
+    // dirty, wait a bit to make sure none of those action(s) are called anymore
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
