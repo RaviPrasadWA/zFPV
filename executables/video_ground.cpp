@@ -38,12 +38,12 @@ OHDVideoGround::OHDVideoGround(std::shared_ptr<OHDLink> link_handle)
   // for the default Ground control application (e.g. QOpenHD) to pick up
   addForwarder("127.0.0.1");
   // See the description in the .config file for more info
-  if (openhd::load_config().NW_FORWARD_TO_LOCALHOST_58XX || true) {
-    m_console->debug("Forwarding video to 5800/5801 localhost is enabled");
+  // if (openhd::load_config().NW_FORWARD_TO_LOCALHOST_58XX || true) {
+    // m_console->debug("Forwarding video to 5800/5801 localhost is enabled");
     // Adding forwarder for WebRTC
-    m_primary_video_forwarder->addForwarder("127.0.0.1", 5800);
+    // m_primary_video_forwarder->addForwarder("127.0.0.1", 5800);
     //m_secondary_video_forwarder->addForwarder("127.0.0.1", 5801);
-  }
+  // }
   if (m_link_handle) {
     m_link_handle->register_on_receive_video_data_cb(
         [this](int stream_index, const uint8_t* data, int data_len) {
