@@ -80,6 +80,7 @@ set(sources
     "executables/gstreamstreamer.cpp"
     "executables/gstaudiostream.cpp"
     "executables/video_air.cpp"
+    "executables/video_ground.cpp"
 )
 
 list(APPEND sources
@@ -270,7 +271,8 @@ add_executable(wb_link_tx_impv executables/wb_link_tx_impv.cpp
     executables/gst_recording_demuxer.cpp
     executables/gstreamstreamer.cpp
     executables/gstaudiostream.cpp
-    executables/video_air.cpp)
+    executables/video_air.cpp
+    executables/video_ground.cpp)
 
 target_include_directories(wb_link_tx_impv PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/executables
@@ -279,11 +281,54 @@ target_include_directories(wb_link_tx_impv PRIVATE
 target_link_libraries(wb_link_tx_impv PRIVATE ${WB_TARGET_LINK_LIBRARIES} ${SPDLOG_LINK_LIBRARIES} nlohmann_json::nlohmann_json PkgConfig::gstreamer PkgConfig::gstreamer-app)
 
 
-# add_executable(wb_link_tx executables/wb_link_tx.cpp)
-# target_link_libraries(wb_link_tx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+add_executable(wb_link_rx_impv executables/wb_link_rx_impv.cpp 
+    ${LIBRTP_SRC}
+    executables/spdlog.cpp 
+    executables/profile.cpp
+    executables/utils.cpp
+    executables/camera_enums.hpp
+    executables/camera_settings.hpp
+    executables/camera.hpp
+    executables/ini_config.cpp
+    executables/util_filesystem.cpp
+    executables/platform.cpp
+    executables/wb_link_helper.cpp
+    executables/util_time.cpp
+    executables/action_handler.cpp
+    executables/settings_imp.cpp
+    executables/wb_link_settings.cpp
+    executables/util_async.cpp
+    executables/reboot_util.cpp
+    executables/bitrate.cpp
+    executables/wifi_card_discovery.cpp
+    executables/settings_directories.cpp
+    executables/wifi_command_helper.cpp
+    executables/wb_link_manager.cpp
+    executables/wb_link.cpp
+    executables/wb_interface.cpp
+    executables/usb_thermal_cam_helper.cpp
+    executables/validate_camera_settings.cpp
+    executables/camera_holder.cpp
+    executables/camera_discovery.cpp
+    executables/camerastream.cpp
+    executables/video_air_generic_settings.cpp
+    executables/external_device.cpp
+    executables/udp.cpp
+    executables/rtp.cpp
+    executables/rtp_eof_helper.cpp
+    executables/gst_bitrate_control_wrapper.hpp
+    executables/air_recording_helper.hpp
+    executables/gst_recording_demuxer.cpp
+    executables/gstreamstreamer.cpp
+    executables/gstaudiostream.cpp
+    executables/video_air.cpp
+    executables/video_ground.cpp)
 
-add_executable(wb_link_rx executables/wb_link_rx.cpp)
-target_link_libraries(wb_link_rx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+target_include_directories(wb_link_rx_impv PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/executables
+    ${CMAKE_CURRENT_SOURCE_DIR}/executables/librtp/inc
+)
+target_link_libraries(wb_link_rx_impv PRIVATE ${WB_TARGET_LINK_LIBRARIES} ${SPDLOG_LINK_LIBRARIES} nlohmann_json::nlohmann_json PkgConfig::gstreamer PkgConfig::gstreamer-app)
 
 
 
