@@ -5,8 +5,8 @@ set -e
 CORES=$(nproc)
 MEM_MB=$(grep MemAvailable /proc/meminfo | awk '{print int($2/1024)}')
 
-# Assume each compile job needs ~400 MB
-JOBS=$(( MEM_MB / 350 ))
+# Assume each compile job needs ~200 MB
+JOBS=$(( MEM_MB / 200 ))
 if [ "$JOBS" -gt "$CORES" ]; then
   JOBS=$CORES
 elif [ "$JOBS" -lt 1 ]; then

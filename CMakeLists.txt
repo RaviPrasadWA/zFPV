@@ -282,8 +282,8 @@ target_link_libraries(wb_link_tx_impv PRIVATE ${WB_TARGET_LINK_LIBRARIES} ${SPDL
 # add_executable(wb_link_tx executables/wb_link_tx.cpp)
 # target_link_libraries(wb_link_tx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
 
-# add_executable(wb_link_rx executables/wb_link_rx.cpp)
-# target_link_libraries(wb_link_rx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
+add_executable(wb_link_rx executables/wb_link_rx.cpp)
+target_link_libraries(wb_link_rx PRIVATE ${WB_TARGET_LINK_LIBRARIES})
 
 
 

@@ -27,49 +27,68 @@
 #include "wb_interface.h"
 #include "video_air.h"
 
-// static constexpr std::chrono::milliseconds SESSION_KEY_PACKETS_INTERVAL =
-//       std::chrono::milliseconds(500);
-// static constexpr bool DEFAULT_ENABLE_SHORT_GUARD = false;
-// static constexpr auto DEFAULT_MCS_INDEX = 2;
-// static constexpr bool DEFAULT_ENABLE_LDPC = false;
-// Video is unidirectional from air to ground
-// static constexpr auto VIDEO_PRIMARY_RADIO_PORT = 10;
-// static constexpr auto VIDEO_SECONDARY_RADIO_PORT = 11;
-
 int main(int argc, char **argv) {
-
-    std::shared_ptr<spdlog::logger> m_console = openhd::log::create_or_get("main");
-    assert(m_console);
-    const auto m_profile = DProfile::discover(true);  // true since this is the tx main
-    m_console->debug("Starting the Tx");
-    auto m_wb_interface = std::make_shared<OHDInterface>( m_profile);
-    auto cameras = OHDVideoAir::discover_cameras();
-    std::unique_ptr<OHDVideoAir> ohd_video_air = std::make_unique<OHDVideoAir>(cameras, m_wb_interface->get_link_handle());
+    try {
+        std::shared_ptr<spdlog::logger> m_console = openhd::log::create_or_get("main");
+        assert(m_console);
+        const auto m_profile = DProfile::discover(true);  // true since this is the tx main
+        m_console->debug("Starting the Tx");
+        auto m_wb_interface = std::make_shared<OHDInterface>( m_profile);
+        auto cameras = OHDVideoAir::discover_cameras();
+        std::unique_ptr<OHDVideoAir> ohd_video_air = std::make_unique<OHDVideoAir>(cameras, m_wb_interface->get_link_handle());
+        
         static bool quit = false;
-    // https://unix.stackexchange.com/questions/362559/list-of-terminal-generated-signals-eg-ctrl-c-sigint
-    signal(SIGTERM, [](int sig) {
-      std::cerr << "Got SIGTERM, exiting\n";
-      quit = true;
-    });
-    signal(SIGQUIT, [](int sig) {
-      std::cerr << "Got SIGQUIT, exiting\n";
-      quit = true;
-    });
-    const auto run_time_begin = std::chrono::steady_clock::now();
-    while (!quit) {
-      std::this_thread::sleep_for(std::chrono::seconds(2));
-      if (openhd::TerminateHelper::instance().should_terminate()) {
-        m_console->debug("Terminating,reason:{}",
-                         openhd::TerminateHelper::instance().terminate_reason());
-        break;
-      }
+        // https://unix.stackexchange.com/questions/362559/list-of-terminal-generated-signals-eg-ctrl-c-sigint
+
+        signal(SIGTERM, [](int sig) {
+        std::cerr << "Got SIGTERM, exiting\n";
+        quit = true;
+        });
+
+        signal(SIGQUIT, [](int sig) {
+        std::cerr << "Got SIGQUIT, exiting\n";
+        quit = true;
+        });
+
+        signal(SIGINT, [](int sig) {
+            std::cerr << "Got SIGINT (Ctrl+C), exiting\n";
+            quit = true;
+        });
+
+        const auto run_time_begin = std::chrono::steady_clock::now();
+        while (!quit) {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            if (openhd::TerminateHelper::instance().should_terminate()) {
+                m_console->debug("Terminating,reason:{}",
+                                openhd::TerminateHelper::instance().terminate_reason());
+                break;
+            }
+        }
+        // --- terminate openhd, most likely requested by a developer with sigterm
+        m_console->debug("Terminating Tx");
+        // Stop any communication between modules, to eliminate any issues created
+        // by threads during cleanup
+        openhd::LinkActionHandler::instance().disable_all_callables();
+        openhd::ExternalDeviceManager::instance().remove_all();
+        // dirty, wait a bit to make sure none of those action(s) are called anymore
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        // by threads during cleanup
+        openhd::LinkActionHandler::instance().disable_all_callables();
+        openhd::ExternalDeviceManager::instance().remove_all();
+        // dirty, wait a bit to make sure none of those action(s) are called anymore
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        m_console->debug("Terminating ohd_video_air - begin");
+        ohd_video_air.reset();
+        m_console->debug("Terminating ohd_video_air - end");
+    } catch (std::exception &ex) {
+        std::cerr << "Error: " << ex.what() << std::endl;
+        exit(1);
+    } catch (...) {
+        std::cerr << "Unknown exception occurred" << std::endl;
+        exit(1);
     }
-    // --- terminate openhd, most likely requested by a developer with sigterm
-    m_console->debug("Terminating openhd");
-    // Stop any communication between modules, to eliminate any issues created
-    // by threads during cleanup
-    openhd::LinkActionHandler::instance().disable_all_callables();
-    openhd::ExternalDeviceManager::instance().remove_all();
-    // dirty, wait a bit to make sure none of those action(s) are called anymore
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    openhd::remove_currently_running_file();
+    return 0;
 }

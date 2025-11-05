@@ -1,1 +1,1 @@
-all seetings reside in this folder
+all settings reside in this folder
