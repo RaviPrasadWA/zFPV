@@ -19,7 +19,7 @@ Achieve **low-latency, reliable HD video** from an HDMI source → zFPV transmit
 - zFPV transport stack
 
 ### 📡 Network
-- 5.8 GHz datalink (Wi-Fi Atheros/ath9k/ath10k or zFPV custom Wi-Fi drivers)
+- 5.8 GHz datalink (Wi-Fi tp-link t3u realtek 88x2bu based)
 - Long-range, high-power radios recommended
 
 ### 🛡 Robustness
